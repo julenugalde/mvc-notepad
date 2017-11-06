@@ -1,12 +1,16 @@
 package eus.julenugalde.mvcnotepad.view;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GraphicsEnvironment;
+import java.awt.Image;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.net.URL;
 
-import javax.management.remote.JMXConnectorServerMBean;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -22,10 +26,11 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
+import eus.julenugalde.mvcnotepad.controller.Action;
 import eus.julenugalde.mvcnotepad.controller.Controller;
 
 @SuppressWarnings("serial")
@@ -56,12 +61,11 @@ public class SwingView extends JFrame implements TextView {
 	private JButton jbPaste;
 	private JButton jbFind;
 	private JButton jbDateTime;
-	private JButton jbInvertColors;
 	private JButton jbFontBold;
-	private JButton jbFontItalics;
+	private JButton jbFontItalic;
 	private JButton jbFontUnderline;
-	private JComboBox jcbFont;
-	private JTextField jtfFontSize;
+	private JComboBox<String> jcbFontName;
+	private JComboBox<String> jcbFontSize;
 	private JTextArea jtaEditor;
 	private JLabel jlStatus;
 	
@@ -80,19 +84,45 @@ public class SwingView extends JFrame implements TextView {
 	private JMenuItem jmiFind;
 	private JMenuItem jmiDateTime;
 	private JCheckBoxMenuItem jcbmiInvertColors;
+	private JMenuItem jmiWordWrap;
 	private JCheckBoxMenuItem jcbmiShowStatusBar;
 	private JMenuItem jmiAbout;
 	
+	private String[] fontNames;
+	private String[] fontSizes;
+	private int currentFontNameIndex;
+	private int currentFontSizeIndex;
+	private boolean fontBold;
+	private boolean fontItalic;
+	private boolean fontUnderline;
+	private int buttonIconSize;
+
 	public SwingView(Controller controller) {
 		this.controller = controller;
 		
 		initializeComponents();
 		assignListeners();
 		setLayout();
+		setUIDefaultValues();
 		initializeWindow();
 	}
 	
 	
+	private void setUIDefaultValues() {
+		//Default background white
+		jcbmiInvertColors.setSelected(false);
+		toggleColors();
+		
+		//Status bar visible
+		jcbmiShowStatusBar.setSelected(true);
+		toggleStatusBar();
+		
+		setTextBold(false);
+		setTextItalic(false);
+		
+	}
+
+
 	private void initializeWindow() {
 		//Set window's look&feel
 		UIManager.LookAndFeelInfo[] laf = UIManager.getInstalledLookAndFeels();
@@ -107,8 +137,9 @@ public class SwingView extends JFrame implements TextView {
 		setLocation(100, 50);
 		setEnabled(true);
 		setResizable(true);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setVisible(true);		
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);	//TODO Hacer que salga ventana de dialogo
+		setVisible(true);	
+		setStatus("Application started");
 	}
 
 
@@ -126,10 +157,10 @@ public class SwingView extends JFrame implements TextView {
 		jpButtons.add(jbSave);
 		jpButtons.add(jbSaveAs);
 		jpButtons.add(new JSeparator(SwingConstants.VERTICAL));
-		jpButtons.add(jtaEditor);
-		jpButtons.add(jtfFontSize);
+		jpButtons.add(jcbFontName);
+		jpButtons.add(jcbFontSize);
 		jpButtons.add(jbFontBold);
-		jpButtons.add(jbFontItalics);
+		jpButtons.add(jbFontItalic);
 		jpButtons.add(jbFontUnderline);
 		jpButtons.add(new JSeparator(SwingConstants.VERTICAL));
 		jpButtons.add(jbCopy);
@@ -138,7 +169,6 @@ public class SwingView extends JFrame implements TextView {
 		jpButtons.add(new JSeparator(SwingConstants.VERTICAL));
 		jpButtons.add(jbFind);
 		jpButtons.add(jbDateTime);
-		jpButtons.add(jbInvertColors);
 		
 		//Menubar
 		JMenuBar jmb = new JMenuBar();		
@@ -152,10 +182,14 @@ public class SwingView extends JFrame implements TextView {
 		jmEdit.add(jmiCut);
 		jmEdit.add(jmiCopy);
 		jmEdit.add(jmiPaste);
+		jmEdit.addSeparator();
 		jmEdit.add(jmiFind);
+		jmEdit.addSeparator();
 		jmEdit.add(jmiDateTime);
+		jmEdit.addSeparator();
 		jmEdit.add(jcbmiInvertColors);
 		jmb.add(jmEdit);
+		jmView.add(jmiWordWrap);
 		jmView.add(jcbmiShowStatusBar);
 		jmb.add(jmView);
 		jmHelp.add(jmiAbout);
@@ -174,94 +208,250 @@ public class SwingView extends JFrame implements TextView {
 
 
 	private void assignListeners() {
+		//Toolbar buttons
 		jbNew.addActionListener((ActionListener)controller);
+		jbOpen.addActionListener((ActionListener)controller);
+		jbSave.addActionListener((ActionListener)controller);
+		jbSaveAs.addActionListener((ActionListener)controller);
+		jbCopy.addActionListener((ActionListener)controller);
+		jbCut.addActionListener((ActionListener)controller);
+		jbPaste.addActionListener((ActionListener)controller);
+		jbFontBold.addActionListener((ActionListener)controller);
+		jbFontItalic.addActionListener((ActionListener)controller);
+		jbFontUnderline.addActionListener((ActionListener)controller);
+		jbDateTime.addActionListener((ActionListener)controller);
+		jbFind.addActionListener((ActionListener)controller);
+		
+		//Combo boxes
+		jcbFontName.addActionListener((ActionListener)controller);
+		jcbFontSize.addActionListener((ActionListener)controller);
+		
+		//Menu items
+		jmiAbout.addActionListener((ActionListener)controller);
+		jmiCopy.addActionListener((ActionListener)controller);
+		jmiCut.addActionListener((ActionListener)controller);
+		jmiDateTime.addActionListener((ActionListener)controller);
+		jmiExit.addActionListener((ActionListener)controller);
+		jmiFind.addActionListener((ActionListener)controller);
+		jmiNew.addActionListener((ActionListener)controller);
+		jmiOpen.addActionListener((ActionListener)controller);
+		jmiPaste.addActionListener((ActionListener)controller);
+		jmiSave.addActionListener((ActionListener)controller);
+		jmiSaveAs.addActionListener((ActionListener)controller);
+		jmiWordWrap.addActionListener((ActionListener)controller);
+		jcbmiInvertColors.addActionListener((ActionListener)controller);
+		jcbmiShowStatusBar.addActionListener((ActionListener)controller);
+		//jmi.addActionListener((ActionListener)controller);
+		
 	}
 
 
-	private Icon loadIcon (String name) {
+	private Icon loadIcon (String name, int size) {
 		URL url =  this.getClass().getResource("/res/" + name);
-		return new ImageIcon(url);
+		Image image = new ImageIcon(url).getImage();
+		return new ImageIcon(image.getScaledInstance(size, size, Image.SCALE_SMOOTH));
 	}
 	
 	private void initializeComponents() {
-		Dimension buttonSize = new Dimension(26, 26);
-		
-		jbNew = new JButton(loadIcon("ic_insert_drive_file_black_24dp.png"));
+		initializeFonts();
+
+		//Button sized
+		buttonIconSize = 20;
+		int menuIconSize = 16;
+		Dimension buttonSize = new Dimension(buttonIconSize+4, buttonIconSize+4);
+				
+		//Elements from the toolbar		
+		jbNew = new JButton(loadIcon("ic_insert_drive_file_black_24dp.png", buttonIconSize));
 		jbNew.setPreferredSize(buttonSize);
 		jbNew.setToolTipText("New file");
+		jbNew.setActionCommand(Action.FILE_NEW.getCommand());
 		
-		jbOpen = new JButton(loadIcon("ic_folder_open_black_24dp.png"));
+		jbOpen = new JButton(loadIcon("ic_folder_open_black_24dp.png", buttonIconSize));
 		jbOpen.setPreferredSize(buttonSize);
 		jbOpen.setToolTipText("Open file");
+		jbOpen.setActionCommand(Action.FILE_OPEN.getCommand());
 		
-		jbSave = new JButton(loadIcon("ic_save_black_24dp.png"));
+		jbSave = new JButton(loadIcon("ic_save_black_24dp.png", buttonIconSize));
 		jbSave.setPreferredSize(buttonSize);
 		jbSave.setToolTipText("Save file");
+		jbSave.setActionCommand(Action.FILE_SAVE.getCommand());
 		
-		jbSaveAs = new JButton(loadIcon("ic_save_black_24dp.png"));
+		jbSaveAs = new JButton(loadIcon("ic_save_black_24dp.png", buttonIconSize));
 		jbSaveAs.setPreferredSize(buttonSize);
 		jbSaveAs.setToolTipText("Save file as...");
+		jbSaveAs.setActionCommand(Action.FILE_SAVE_AS.getCommand());
 		
-		jbCopy = new JButton(loadIcon("ic_content_copy_black_24dp.png"));
+		jbCopy = new JButton(loadIcon("ic_content_copy_black_24dp.png", buttonIconSize));
 		jbCopy.setPreferredSize(buttonSize);
 		jbCopy.setToolTipText("Copy");
+		jbCopy.setActionCommand(Action.EDIT_COPY.getCommand());
 		
-		jbCut = new JButton(loadIcon("ic_content_cut_black_24dp.png"));
+		jbCut = new JButton(loadIcon("ic_content_cut_black_24dp.png", buttonIconSize));
 		jbCut.setPreferredSize(buttonSize);
 		jbCut.setToolTipText("Cut");
+		jbCut.setActionCommand(Action.EDIT_CUT.getCommand());
 		
-		jbPaste = new JButton(loadIcon("ic_content_paste_black_24dp.png"));
+		jbPaste = new JButton(loadIcon("ic_content_paste_black_24dp.png", buttonIconSize));
 		jbPaste.setPreferredSize(buttonSize);
 		jbPaste.setToolTipText("Paste");
+		jbPaste.setActionCommand(Action.EDIT_PASTE.getCommand());
 		
-		jbFind = new JButton(loadIcon("ic_find_in_page_black_24dp.png"));
+		jbFind = new JButton(loadIcon("ic_find_in_page_black_24dp.png", buttonIconSize));
 		jbFind.setPreferredSize(buttonSize);
 		jbFind.setToolTipText("Find");
+		jbFind.setActionCommand(Action.EDIT_FIND.getCommand());
 		
-		jbDateTime = new JButton(loadIcon("ic_insert_invitation_black_24dp.png"));
+		jbDateTime = new JButton(loadIcon("ic_insert_invitation_black_24dp.png", buttonIconSize));
 		jbDateTime.setPreferredSize(buttonSize);
 		jbDateTime.setToolTipText("Insert date & time");
+		jbDateTime.setActionCommand(Action.EDIT_DATE_TIME.getCommand());
 		
-		jbInvertColors = new JButton(loadIcon("ic_invert_colors_on_black_24dp.png"));
-		jbInvertColors.setPreferredSize(buttonSize);
-		jbInvertColors.setToolTipText("Invert colors");
-		
-		jbFontBold = new JButton(loadIcon("ic_format_bold_black_24dp.png"));
+		jbFontBold = new JButton(loadIcon("ic_format_bold_black_24dp.png", buttonIconSize));
 		jbFontBold.setPreferredSize(buttonSize);
 		jbFontBold.setToolTipText("Bold");
+		jbFontBold.setActionCommand(Action.FONT_BOLD.getCommand());
 		
-		jbFontItalics = new JButton(loadIcon("ic_format_italic_black_24dp.png"));
-		jbFontItalics.setPreferredSize(buttonSize);
-		jbFontItalics.setToolTipText("Italics");
+		jbFontItalic = new JButton(loadIcon("ic_format_italic_black_24dp.png", buttonIconSize));
+		jbFontItalic.setPreferredSize(buttonSize);
+		jbFontItalic.setToolTipText("Italic");
+		jbFontItalic.setActionCommand(Action.FONT_ITALIC.getCommand());
+		jbFontItalic.setPressedIcon(loadIcon("ic_format_italic_grey600_24dp.png", buttonIconSize));
 		
-		jbFontUnderline = new JButton(loadIcon("ic_format_underline_black_24dp.png"));
+		jbFontUnderline = new JButton(
+				loadIcon("ic_format_underline_black_24dp.png", buttonIconSize));
 		jbFontUnderline.setPreferredSize(buttonSize);
 		jbFontUnderline.setToolTipText("Underline");
+		jbFontUnderline.setActionCommand(Action.FONT_UNDERLINE.getCommand());
+		jbFontUnderline.setPressedIcon(
+				loadIcon("ic_format_underline_grey600_24dp.png", buttonIconSize));
 		
-		jcbFont = new JComboBox();
-		jtfFontSize = new JTextField();
+		jcbFontName = new JComboBox<String>(fontNames);
+		jcbFontName.setSelectedIndex(currentFontNameIndex);
+		jcbFontName.setActionCommand(Action.CHANGE_FONT_NAME.getCommand());
 		
+		jcbFontSize = new JComboBox<String>(fontSizes);
+		jcbFontSize.setSelectedItem(fontSizes[currentFontSizeIndex]);
+		jcbFontSize.setActionCommand(Action.CHANGE_FONT_SIZE.getCommand());
+		
+		//Text area and status
 		jtaEditor = new JTextArea();
+		setTextFont(fontNames[currentFontNameIndex], 
+				(Integer.valueOf(fontSizes[currentFontSizeIndex])).intValue());
 		jlStatus = new JLabel("");
 		
+		//Menus
 		jmFile = new JMenu("File");
+		jmFile.setMnemonic(KeyEvent.VK_F);
 		jmEdit = new JMenu("Edit");
+		jmEdit.setMnemonic(KeyEvent.VK_E);
 		jmView = new JMenu("View");
+		jmView.setMnemonic(KeyEvent.VK_V);
 		jmHelp = new JMenu("Help");
+		jmHelp.setMnemonic(KeyEvent.VK_H);
+		
 		jmiNew = new JMenuItem("New");
+		jmiNew.setIcon(loadIcon("ic_insert_drive_file_black_24dp.png", menuIconSize));
+		jmiNew.setMnemonic(KeyEvent.VK_N);
+		jmiNew.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK));
+		jmiNew.setActionCommand(Action.FILE_NEW.getCommand());
+		
 		jmiOpen = new JMenuItem("Open...");
+		jmiOpen.setIcon(loadIcon("ic_folder_open_black_24dp.png", menuIconSize));
+		jmiOpen.setMnemonic(KeyEvent.VK_O);
+		jmiOpen.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.CTRL_DOWN_MASK));
+		jmiOpen.setActionCommand(Action.FILE_OPEN.getCommand());
+		
 		jmiSave = new JMenuItem("Save");
+		jmiSave.setIcon(loadIcon("ic_save_black_24dp.png", menuIconSize));
+		jmiSave.setMnemonic(KeyEvent.VK_S);
+		jmiSave.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK));
+		jmiSave.setActionCommand(Action.FILE_SAVE.getCommand());
+		
 		jmiSaveAs = new JMenuItem("Save as...");
+		jmiSaveAs.setIcon(loadIcon("ic_save_black_24dp.png", menuIconSize));
+		jmiSaveAs.setMnemonic(KeyEvent.VK_A);
+		jmiSaveAs.setActionCommand(Action.FILE_SAVE_AS.getCommand());
+		
 		jmiExit = new JMenuItem("Exit");
+		jmiExit.setIcon(loadIcon("ic_highlight_remove_black_24dp.png", menuIconSize));
+		jmiExit.setMnemonic(KeyEvent.VK_X);
+		jmiExit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, KeyEvent.CTRL_DOWN_MASK));
+		jmiExit.setActionCommand(Action.FILE_EXIT.getCommand());
+		
 		jmiCut = new JMenuItem("Cut");
+		jmiCut.setIcon(loadIcon("ic_content_cut_black_24dp.png", menuIconSize));
+		jmiCut.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK));
+		jmiCut.setActionCommand(Action.EDIT_CUT.getCommand());
+		
 		jmiCopy = new JMenuItem("Copy");
+		jmiCopy.setIcon(loadIcon("ic_content_copy_black_24dp.png", menuIconSize));
+		jmiCopy.setMnemonic(KeyEvent.VK_C);
+		jmiCopy.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK));
+		jmiCopy.setActionCommand(Action.EDIT_COPY.getCommand());
+		
 		jmiPaste = new JMenuItem("Paste");
+		jmiPaste.setIcon(loadIcon("ic_content_paste_black_24dp.png", menuIconSize));
+		jmiPaste.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK));
+		jmiPaste.setActionCommand(Action.EDIT_PASTE.getCommand());
+		
 		jmiFind = new JMenuItem("Find...");
+		jmiFind.setIcon(loadIcon("ic_find_in_page_black_24dp.png", menuIconSize));
+		jmiFind.setMnemonic(KeyEvent.VK_F);
+		jmiFind.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_DOWN_MASK));
+		jmiFind.setActionCommand(Action.EDIT_FIND.getCommand());
+		
 		jmiDateTime = new JMenuItem("Insert date & time");
+		jmiDateTime.setIcon(loadIcon("ic_insert_invitation_black_24dp.png", menuIconSize));
+		jmiDateTime.setMnemonic(KeyEvent.VK_D);
+		jmiDateTime.setAccelerator(
+				KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.CTRL_DOWN_MASK));
+		jmiDateTime.setActionCommand(Action.EDIT_DATE_TIME.getCommand());
+		
 		jcbmiInvertColors = new JCheckBoxMenuItem("Invert colors");
+		jcbmiInvertColors.setIcon(loadIcon("ic_invert_colors_on_black_24dp.png", menuIconSize));
+		jcbmiInvertColors.setMnemonic(KeyEvent.VK_I);
+		jcbmiInvertColors.setAccelerator(
+				KeyStroke.getKeyStroke(KeyEvent.VK_I, KeyEvent.CTRL_DOWN_MASK));
+		jcbmiInvertColors.setActionCommand(Action.EDIT_INVERT_COLORS.getCommand());
+		
+		jmiWordWrap = new JMenuItem("Word wrap");
+		jmiWordWrap.setIcon(loadIcon("ic_wrap_text_black_24dp.png", menuIconSize));
+		jmiWordWrap.setMnemonic(KeyEvent.VK_W);
+		jmiWordWrap.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyEvent.CTRL_DOWN_MASK));
+		jmiWordWrap.setActionCommand(Action.VIEW_WORD_WRAP.getCommand());
+		
 		jcbmiShowStatusBar = new JCheckBoxMenuItem("Show status bar");
-		jmiAbout = new JMenuItem("About...");		
+		jcbmiShowStatusBar.setIcon(loadIcon("ic_info_outline_black_24dp.png", menuIconSize));
+		jcbmiShowStatusBar.setMnemonic(KeyEvent.VK_T);
+		jcbmiShowStatusBar.setActionCommand(Action.VIEW_STATUS_BAR.getCommand());
+		
+		jmiAbout = new JMenuItem("About...");	
+		jmiAbout.setIcon(loadIcon("ic_info_black_24dp.png", menuIconSize));
+		jmiAbout.setMnemonic(KeyEvent.VK_B);
+		jmiAbout.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_H, KeyEvent.CTRL_DOWN_MASK));
+		jmiAbout.setActionCommand(Action.HELP_ABOUT.getCommand());
+				
 	}
+
+	private void initializeFonts() {
+		fontSizes = new String[] {"8", "9", "10", "11", "12", "14", "16", "18", "20", 
+				"22", "24", "26", "28", "36", "48", "72"};
+		fontNames = getFontsArray();
+		fontBold = false;
+		fontItalic = false;
+		fontUnderline = false;
+		currentFontSizeIndex = 4;	//12 points
+
+		String preferredFont = "Arial";
+		currentFontNameIndex = 0;
+		fontNames = getFontsArray();
+		for (int i=0; i<fontNames.length; i++) {
+			if (fontNames[i].equals(preferredFont)) {
+				currentFontNameIndex = i;
+			}
+		}
+	}
+
 
 	@Override
 	public void displayText(String text) {
@@ -276,13 +466,19 @@ public class SwingView extends JFrame implements TextView {
 	}
 
 	@Override
-	public void invertColors() {
-		// TODO Auto-generated method stub
-
+	public void toggleColors() {
+		if (jcbmiInvertColors.isSelected()) {	//Black background, white text
+			jtaEditor.setBackground(Color.BLACK);
+			jtaEditor.setForeground(Color.WHITE);
+		}
+		else {	//White background black text
+			jtaEditor.setBackground(Color.WHITE);
+			jtaEditor.setForeground(Color.BLACK);
+		}
 	}
 
 	@Override
-	public String getText() {
+	public String getCurrentText() {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -292,5 +488,97 @@ public class SwingView extends JFrame implements TextView {
 	public void setStatus(String status) {
 		jlStatus.setText(status);
 	}
+	
+	private String[] getFontsArray () {
+		return GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+	}
+	
+	@Override
+	public void setTextFont(String fontName, int fontSize) {
+		//Modifiers are not defined in the view interface definition, but we include them
+		int modifiers = Font.PLAIN;
+		if (fontBold) {
+			modifiers = modifiers | Font.BOLD;
+		}
+		if (fontItalic) {
+			modifiers = modifiers | Font.ITALIC;
+		}
+		if (fontUnderline) {
+			//TODO Ver como implementar esto
+		}
 
+		jtaEditor.setFont(new Font(fontName, modifiers, fontSize));
+	}
+	
+	@Override
+	public void setTextBold(boolean flag) {
+		Font font = jtaEditor.getFont();
+		int style = font.getStyle();
+		if (flag == true) {
+			System.out.println("Actual: " + Integer.toBinaryString(style));
+			jbFontBold.setIcon(loadIcon("ic_format_bold_black_24dp.png", buttonIconSize));
+			style |= Font.BOLD;
+			System.out.println("Nuevo: " + Integer.toBinaryString(style));
+			
+		}
+		else {
+			jbFontBold.setIcon(loadIcon("ic_format_bold_grey600_24dp.png", buttonIconSize));
+			System.out.println("Actual: " + Integer.toBinaryString(style));
+			style &= (~Font.BOLD);	
+			System.out.println("Nuevo: " + Integer.toBinaryString(style));
+			
+		}
+		jtaEditor.setFont(new Font (font.getFontName(), style, font.getSize()));
+		fontBold = flag;
+	}
+	
+	@Override
+	public boolean isTextBold() {return fontBold;}
+	
+	@Override
+	public void setTextItalic(boolean flag) {
+		Font font = jtaEditor.getFont();
+		int style = font.getStyle();
+		if (flag == true) {
+			System.out.println("italic a true. Actual: " + Integer.toBinaryString(style));
+			jbFontItalic.setIcon(loadIcon("ic_format_italic_black_24dp.png", buttonIconSize));
+			style |= Font.ITALIC;
+			System.out.println("italic a true. Nuevo: " + Integer.toBinaryString(style));
+			
+		}
+		else {
+			jbFontItalic.setIcon(loadIcon("ic_format_italic_grey600_24dp.png", buttonIconSize));
+			System.out.println("italic a false. Actual: " + Integer.toBinaryString(style));
+			style &= (~Font.ITALIC);	
+			System.out.println("italic a false. Nuevo: " + Integer.toBinaryString(style));
+			
+		}
+		jtaEditor.setFont(new Font (font.getFontName(), style, font.getSize()));
+		fontItalic = flag;	
+	}
+	
+	@Override
+	public boolean isTextItalic() {return fontItalic;}
+	
+	@Override
+	public void appendText(String text) {
+		StringBuilder sb = new StringBuilder (jtaEditor.getText());
+		jtaEditor.setText(sb.append(text).toString());		
+	}
+
+	@Override
+	public void toggleStatusBar() {
+		if (jcbmiShowStatusBar.isSelected()) {	//Status bar enabled
+			jlStatus.setVisible(true);
+		}
+		else {	//Status bar disabled
+			jlStatus.setVisible(false);
+		}
+	}
+	
+	@Override
+	public void showPopupMessage (String message) {
+		JOptionPane.showMessageDialog(this, message, "About the application",
+				JOptionPane.INFORMATION_MESSAGE);
+	}
 }
