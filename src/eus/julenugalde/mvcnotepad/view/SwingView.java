@@ -9,13 +9,16 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.WindowListener;
+import java.io.File;
 import java.net.URL;
-
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -35,20 +38,13 @@ import eus.julenugalde.mvcnotepad.controller.Controller;
 
 @SuppressWarnings("serial")
 public class SwingView extends JFrame implements TextView {
-	@SuppressWarnings("unused")
-	private static final int LOOK_FEEL_METAL = 0;
-	@SuppressWarnings("unused")
-	private static final int LOOK_FEEL_NIMBUS = 1;
-	@SuppressWarnings("unused")
-	private static final int LOOK_FEEL_CDE_MOTIF = 2;
-	@SuppressWarnings("unused")
-	private static final int LOOK_FEEL_WINDOWS = 3;
-	@SuppressWarnings("unused")
-	private static final int LOOK_FEEL_WINDOWS_CLASSIC = 4;
-	@SuppressWarnings("unused")
-	private static final int LOOK_FEEL_WIN_VISTA = 6;
-	@SuppressWarnings("unused")
-	private static final int LOOK_FEEL_MACINTOSH = 7;
+	public static final int LOOK_FEEL_METAL = 0;
+	public static final int LOOK_FEEL_NIMBUS = 1;
+	public static final int LOOK_FEEL_CDE_MOTIF = 2;
+	public static final int LOOK_FEEL_WINDOWS = 3;
+	public static final int LOOK_FEEL_WINDOWS_CLASSIC = 4;
+	public static final int LOOK_FEEL_WIN_VISTA = 5;
+	public static final int LOOK_FEEL_MACINTOSH = 6;
 	
 	private Controller controller;
 	
@@ -63,7 +59,6 @@ public class SwingView extends JFrame implements TextView {
 	private JButton jbDateTime;
 	private JButton jbFontBold;
 	private JButton jbFontItalic;
-	private JButton jbFontUnderline;
 	private JComboBox<String> jcbFontName;
 	private JComboBox<String> jcbFontSize;
 	private JTextArea jtaEditor;
@@ -84,7 +79,7 @@ public class SwingView extends JFrame implements TextView {
 	private JMenuItem jmiFind;
 	private JMenuItem jmiDateTime;
 	private JCheckBoxMenuItem jcbmiInvertColors;
-	private JMenuItem jmiWordWrap;
+	private JCheckBoxMenuItem jcbmiWordWrap;
 	private JCheckBoxMenuItem jcbmiShowStatusBar;
 	private JMenuItem jmiAbout;
 	
@@ -94,7 +89,6 @@ public class SwingView extends JFrame implements TextView {
 	private int currentFontSizeIndex;
 	private boolean fontBold;
 	private boolean fontItalic;
-	private boolean fontUnderline;
 	private int buttonIconSize;
 
 	public SwingView(Controller controller) {
@@ -117,9 +111,14 @@ public class SwingView extends JFrame implements TextView {
 		jcbmiShowStatusBar.setSelected(true);
 		toggleStatusBar();
 		
+		//Plain text
 		setTextBold(false);
 		setTextItalic(false);
 		
+		//Word wrap feature on
+		jtaEditor.setWrapStyleWord(true);
+		jcbmiWordWrap.setSelected(true);
+		toggleWordWrap();
 	}
 
 
@@ -129,43 +128,42 @@ public class SwingView extends JFrame implements TextView {
 		try {
 			UIManager.setLookAndFeel(laf[LOOK_FEEL_WINDOWS].getClassName());			
 		} catch (Exception e) {
-			showError(e.getLocalizedMessage());
+			showError("Look & Feel error", e.getLocalizedMessage());
 		}
 
 		setTitle("MVC Notepad");
 		setSize(800, 600);
-		setLocation(100, 50);
+		setLocation(400, 50);
 		setEnabled(true);
 		setResizable(true);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);	//TODO Hacer que salga ventana de dialogo
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);	
 		setVisible(true);	
 		setStatus("Application started");
 	}
 
-
-	private void showError(String message) {
-		JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);		
-	}
-
-
 	private void setLayout() {
 		//Buttons toolbar
-		JPanel jpGeneral = new JPanel(new BorderLayout(10, 10));
+		JPanel jpGeneral = new JPanel(new BorderLayout(0, 0));
 		JPanel jpButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
 		jpButtons.add(jbNew);
 		jpButtons.add(jbOpen);
 		jpButtons.add(jbSave);
 		jpButtons.add(jbSaveAs);
 		jpButtons.add(new JSeparator(SwingConstants.VERTICAL));
+		jpButtons.add(new JSeparator(SwingConstants.VERTICAL));
+		jpButtons.add(new JSeparator(SwingConstants.VERTICAL));
 		jpButtons.add(jcbFontName);
 		jpButtons.add(jcbFontSize);
 		jpButtons.add(jbFontBold);
 		jpButtons.add(jbFontItalic);
-		jpButtons.add(jbFontUnderline);
+		jpButtons.add(new JSeparator(SwingConstants.VERTICAL));
+		jpButtons.add(new JSeparator(SwingConstants.VERTICAL));
 		jpButtons.add(new JSeparator(SwingConstants.VERTICAL));
 		jpButtons.add(jbCopy);
 		jpButtons.add(jbCut);
 		jpButtons.add(jbPaste);
+		jpButtons.add(new JSeparator(SwingConstants.VERTICAL));
+		jpButtons.add(new JSeparator(SwingConstants.VERTICAL));
 		jpButtons.add(new JSeparator(SwingConstants.VERTICAL));
 		jpButtons.add(jbFind);
 		jpButtons.add(jbDateTime);
@@ -189,7 +187,7 @@ public class SwingView extends JFrame implements TextView {
 		jmEdit.addSeparator();
 		jmEdit.add(jcbmiInvertColors);
 		jmb.add(jmEdit);
-		jmView.add(jmiWordWrap);
+		jmView.add(jcbmiWordWrap);
 		jmView.add(jcbmiShowStatusBar);
 		jmb.add(jmView);
 		jmHelp.add(jmiAbout);
@@ -206,7 +204,6 @@ public class SwingView extends JFrame implements TextView {
 		this.add(jpGeneral);
 	}
 
-
 	private void assignListeners() {
 		//Toolbar buttons
 		jbNew.addActionListener((ActionListener)controller);
@@ -218,7 +215,6 @@ public class SwingView extends JFrame implements TextView {
 		jbPaste.addActionListener((ActionListener)controller);
 		jbFontBold.addActionListener((ActionListener)controller);
 		jbFontItalic.addActionListener((ActionListener)controller);
-		jbFontUnderline.addActionListener((ActionListener)controller);
 		jbDateTime.addActionListener((ActionListener)controller);
 		jbFind.addActionListener((ActionListener)controller);
 		
@@ -238,13 +234,16 @@ public class SwingView extends JFrame implements TextView {
 		jmiPaste.addActionListener((ActionListener)controller);
 		jmiSave.addActionListener((ActionListener)controller);
 		jmiSaveAs.addActionListener((ActionListener)controller);
-		jmiWordWrap.addActionListener((ActionListener)controller);
+		jcbmiWordWrap.addActionListener((ActionListener)controller);
 		jcbmiInvertColors.addActionListener((ActionListener)controller);
 		jcbmiShowStatusBar.addActionListener((ActionListener)controller);
-		//jmi.addActionListener((ActionListener)controller);
 		
+		//Text area
+		jtaEditor.addKeyListener((KeyListener)controller);
+		
+		//Window
+		this.addWindowListener((WindowListener)controller);
 	}
-
 
 	private Icon loadIcon (String name, int size) {
 		URL url =  this.getClass().getResource("/res/" + name);
@@ -316,14 +315,6 @@ public class SwingView extends JFrame implements TextView {
 		jbFontItalic.setToolTipText("Italic");
 		jbFontItalic.setActionCommand(Action.FONT_ITALIC.getCommand());
 		jbFontItalic.setPressedIcon(loadIcon("ic_format_italic_grey600_24dp.png", buttonIconSize));
-		
-		jbFontUnderline = new JButton(
-				loadIcon("ic_format_underline_black_24dp.png", buttonIconSize));
-		jbFontUnderline.setPreferredSize(buttonSize);
-		jbFontUnderline.setToolTipText("Underline");
-		jbFontUnderline.setActionCommand(Action.FONT_UNDERLINE.getCommand());
-		jbFontUnderline.setPressedIcon(
-				loadIcon("ic_format_underline_grey600_24dp.png", buttonIconSize));
 		
 		jcbFontName = new JComboBox<String>(fontNames);
 		jcbFontName.setSelectedIndex(currentFontNameIndex);
@@ -414,11 +405,11 @@ public class SwingView extends JFrame implements TextView {
 				KeyStroke.getKeyStroke(KeyEvent.VK_I, KeyEvent.CTRL_DOWN_MASK));
 		jcbmiInvertColors.setActionCommand(Action.EDIT_INVERT_COLORS.getCommand());
 		
-		jmiWordWrap = new JMenuItem("Word wrap");
-		jmiWordWrap.setIcon(loadIcon("ic_wrap_text_black_24dp.png", menuIconSize));
-		jmiWordWrap.setMnemonic(KeyEvent.VK_W);
-		jmiWordWrap.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyEvent.CTRL_DOWN_MASK));
-		jmiWordWrap.setActionCommand(Action.VIEW_WORD_WRAP.getCommand());
+		jcbmiWordWrap = new JCheckBoxMenuItem("Word wrap");
+		jcbmiWordWrap.setIcon(loadIcon("ic_wrap_text_black_24dp.png", menuIconSize));
+		jcbmiWordWrap.setMnemonic(KeyEvent.VK_W);
+		jcbmiWordWrap.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyEvent.CTRL_DOWN_MASK));
+		jcbmiWordWrap.setActionCommand(Action.VIEW_WORD_WRAP.getCommand());
 		
 		jcbmiShowStatusBar = new JCheckBoxMenuItem("Show status bar");
 		jcbmiShowStatusBar.setIcon(loadIcon("ic_info_outline_black_24dp.png", menuIconSize));
@@ -439,7 +430,6 @@ public class SwingView extends JFrame implements TextView {
 		fontNames = getFontsArray();
 		fontBold = false;
 		fontItalic = false;
-		fontUnderline = false;
 		currentFontSizeIndex = 4;	//12 points
 
 		String preferredFont = "Arial";
@@ -452,17 +442,14 @@ public class SwingView extends JFrame implements TextView {
 		}
 	}
 
-
 	@Override
 	public void displayText(String text) {
-		//TODO implementar
-
+		jtaEditor.setText(text);
 	}
 
 	@Override
 	public void deleteText() {
-		// TODO Auto-generated method stub
-
+		jtaEditor.setText("");
 	}
 
 	@Override
@@ -479,8 +466,7 @@ public class SwingView extends JFrame implements TextView {
 
 	@Override
 	public String getCurrentText() {
-		// TODO Auto-generated method stub
-		return null;
+		return jtaEditor.getText();
 	}
 
 
@@ -503,69 +489,95 @@ public class SwingView extends JFrame implements TextView {
 		if (fontItalic) {
 			modifiers = modifiers | Font.ITALIC;
 		}
-		if (fontUnderline) {
-			//TODO Ver como implementar esto
-		}
 
 		jtaEditor.setFont(new Font(fontName, modifiers, fontSize));
 	}
 	
 	@Override
 	public void setTextBold(boolean flag) {
-		Font font = jtaEditor.getFont();
-		int style = font.getStyle();
+		fontBold = flag;
+		int style = jtaEditor.getFont().getStyle();
 		if (flag == true) {
-			System.out.println("Actual: " + Integer.toBinaryString(style));
 			jbFontBold.setIcon(loadIcon("ic_format_bold_black_24dp.png", buttonIconSize));
 			style |= Font.BOLD;
-			System.out.println("Nuevo: " + Integer.toBinaryString(style));
-			
 		}
 		else {
 			jbFontBold.setIcon(loadIcon("ic_format_bold_grey600_24dp.png", buttonIconSize));
-			System.out.println("Actual: " + Integer.toBinaryString(style));
-			style &= (~Font.BOLD);	
-			System.out.println("Nuevo: " + Integer.toBinaryString(style));
-			
+			style &= (~Font.BOLD);			
 		}
-		jtaEditor.setFont(new Font (font.getFontName(), style, font.getSize()));
-		fontBold = flag;
+		jtaEditor.setFont(jtaEditor.getFont().deriveFont(style));
 	}
 	
 	@Override
-	public boolean isTextBold() {return fontBold;}
+	public boolean isTextBold() {
+		return fontBold;
+	}
 	
 	@Override
 	public void setTextItalic(boolean flag) {
-		Font font = jtaEditor.getFont();
-		int style = font.getStyle();
+		fontItalic = flag;
+		int style = jtaEditor.getFont().getStyle();
 		if (flag == true) {
-			System.out.println("italic a true. Actual: " + Integer.toBinaryString(style));
 			jbFontItalic.setIcon(loadIcon("ic_format_italic_black_24dp.png", buttonIconSize));
-			style |= Font.ITALIC;
-			System.out.println("italic a true. Nuevo: " + Integer.toBinaryString(style));
-			
+			style |= Font.ITALIC;			
 		}
 		else {
 			jbFontItalic.setIcon(loadIcon("ic_format_italic_grey600_24dp.png", buttonIconSize));
-			System.out.println("italic a false. Actual: " + Integer.toBinaryString(style));
-			style &= (~Font.ITALIC);	
-			System.out.println("italic a false. Nuevo: " + Integer.toBinaryString(style));
-			
+			style &= (~Font.ITALIC);			
 		}
-		jtaEditor.setFont(new Font (font.getFontName(), style, font.getSize()));
-		fontItalic = flag;	
+		jtaEditor.setFont(jtaEditor.getFont().deriveFont(style));
+			
 	}
 	
 	@Override
-	public boolean isTextItalic() {return fontItalic;}
+	public boolean isTextItalic() {
+		return fontItalic;
+	}
+	
+	@Override
+	public void toggleWordWrap() {
+		jtaEditor.setLineWrap(jcbmiWordWrap.isSelected());		
+	}
 	
 	@Override
 	public void appendText(String text) {
+		//The text will be inserted at the end of the text area
 		StringBuilder sb = new StringBuilder (jtaEditor.getText());
-		jtaEditor.setText(sb.append(text).toString());		
+		jtaEditor.setText(sb.append(text).toString());			
+		jtaEditor.requestFocus();
 	}
 
+	public String cutText() {
+		String text = jtaEditor.getSelectedText();
+		StringBuilder sb = new StringBuilder(jtaEditor.getText());
+		int position = sb.indexOf(text);
+		if (position > 0) {
+			sb.delete(position, position+text.length());
+			jtaEditor.setText(sb.toString());
+		}
+		else {
+			showError("Error cutting text", "Text not found");
+		}
+		return text;		
+	}
+	
+	public String copyText() {
+		return jtaEditor.getSelectedText();
+	}
+	
+	public void pasteText(String text) {
+		//The text will be inserted in the current caret position
+		int caretPosition = jtaEditor.getCaretPosition();
+		StringBuilder sb = new StringBuilder (jtaEditor.getText());
+		
+		//Store the characters behind the caret before trimming the StringBuilder content
+		String tail = sb.substring(caretPosition, sb.length());
+		sb.delete(caretPosition, sb.length());
+		jtaEditor.setText(sb.append(text).append(tail).toString());
+		jtaEditor.setCaretPosition(caretPosition + text.length());
+		jtaEditor.requestFocus();
+	}
+	
 	@Override
 	public void toggleStatusBar() {
 		if (jcbmiShowStatusBar.isSelected()) {	//Status bar enabled
@@ -577,8 +589,96 @@ public class SwingView extends JFrame implements TextView {
 	}
 	
 	@Override
-	public void showPopupMessage (String message) {
-		JOptionPane.showMessageDialog(this, message, "About the application",
-				JOptionPane.INFORMATION_MESSAGE);
+	public void showPopupMessage (String title, String message) {
+		JOptionPane.showMessageDialog(this, message, title,	JOptionPane.INFORMATION_MESSAGE);
+	}
+	
+	@Override
+	public void showError(String title, String error) {
+		JOptionPane.showMessageDialog(this, error, title, JOptionPane.ERROR_MESSAGE);
+	}
+
+	
+
+	@Override
+	public String showTextSearchDialog(String defaultText) {
+		Object obj = JOptionPane.showInputDialog(
+				this, "Find:", "Find", JOptionPane.QUESTION_MESSAGE, null, null, defaultText);
+		if (obj == null) {
+			return null;
+		}
+		else {	
+			return (String)obj;
+		}
+	}
+
+
+	@Override
+	public void updateFontName() {
+		currentFontNameIndex = jcbFontName.getSelectedIndex();
+		int style = jtaEditor.getFont().getStyle();
+		int size = jtaEditor.getFont().getSize();
+		String fontName = fontNames[currentFontNameIndex];
+		jtaEditor.setFont(new Font(fontName, style, size));
+		
+	}
+
+	@Override
+	public void updateFontSize() {
+		currentFontSizeIndex = jcbFontSize.getSelectedIndex();
+		float size = Float.valueOf(fontSizes[currentFontSizeIndex]).floatValue();
+		setStatus("New font size: " + size);
+		jtaEditor.setFont(jtaEditor.getFont().deriveFont(size));		
+	}
+
+	@Override
+	public void setCaretPosition(int position) {
+		if (position >= (jtaEditor.getText().length())) {
+			position = jtaEditor.getText().length() - 1;
+		}
+		jtaEditor.setCaretPosition(position);
+		jtaEditor.requestFocus();
+		
+	}
+
+
+	@Override
+	public void closeView() {
+		this.dispose();
+	}
+
+
+	@Override
+	public int showPrompt(String title, String message) {
+		int exitCode = JOptionPane.showConfirmDialog(this, message, title,
+				JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+		switch (exitCode) {
+		case JOptionPane.YES_OPTION:
+			return TextView.YES_OPTION;
+		case JOptionPane.NO_OPTION:
+			return TextView.NO_OPTION;
+		case JOptionPane.CANCEL_OPTION:
+			return TextView.CANCEL_OPTION;
+		case JOptionPane.CLOSED_OPTION:
+			return TextView.CANCEL_OPTION;
+		default:
+			return TextView.CANCEL_OPTION;
+		}
+	}
+
+	@Override
+	public String chooseFile(String source) {
+		JFileChooser jfc = new JFileChooser(source);
+		jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		jfc.setDialogTitle("Choose a file to read");
+		jfc.setDialogType(JFileChooser.OPEN_DIALOG);
+		jfc.showOpenDialog(this);
+		File selectedFile = jfc.getSelectedFile();
+		if (selectedFile == null) {
+			return null;
+		}
+		else {
+			return selectedFile.getAbsolutePath();
+		}
 	}
 }

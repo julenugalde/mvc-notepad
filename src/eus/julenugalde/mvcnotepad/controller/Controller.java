@@ -1,6 +1,7 @@
 package eus.julenugalde.mvcnotepad.controller;
 
 public interface Controller {
+	
 	/** The text will be stored in a text file in the user's device */
 	public static final int MODEL_TEXT_FILE = 1;
 	/** The text will be stored in a database */
@@ -9,7 +10,13 @@ public interface Controller {
 	public static final int MODEL_NETWORK = 3;
 	
 	/** The application will be displayed as a Swing GUI */
-	public static final int SWING_VIEW = 11;
+	public static final int SWING_VIEW = 1;
+	
+	/** Data will be stored in a new data source */
+	public static final int NEW_DATA_SOURCE = 1;
+	
+	/** Data will be stored in an existing data source */
+	public static final int EXISTING_DATA_SOURCE = 2;
 	
 	/** Loads the specified model
 	 * 
@@ -23,4 +30,5 @@ public interface Controller {
 	 * @param viewType View type to be used, currently only SWING_VIEW implemented.
 	 */
 	public void initializeView (int viewType);
+	
 }

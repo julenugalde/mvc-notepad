@@ -3,11 +3,10 @@ package eus.julenugalde.mvcnotepad;
 import javax.swing.JOptionPane;
 
 import eus.julenugalde.mvcnotepad.controller.*;
-import eus.julenugalde.mvcnotepad.model.*;
-import eus.julenugalde.mvcnotepad.view.*;
 
 /** Controller for the MVCNotepad application */
 public class MVCNotepad {
+	@SuppressWarnings("unused")
 	private static Controller controller;
 	/** Name of the schema for a database connection; current directory if file is used */
 	private static String dataSource;
@@ -43,12 +42,10 @@ public class MVCNotepad {
 			} else {
 				showError("The value of the first parameter is not valid");
 			}
-		}
-				
+		}			
 	}
 		
 	private static void showError(String message) {
 		JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
-	}
-	
+	}	
 }

@@ -10,7 +10,6 @@ public enum Action {
 	CHANGE_FONT_SIZE ("change_font_size"),
 	FONT_BOLD ("font_bold"),
 	FONT_ITALIC ("font_italic"),
-	FONT_UNDERLINE ("font_underline"),
 	EDIT_CUT ("edit_cut"),
 	EDIT_COPY ("edit_copy"),
 	EDIT_PASTE ("edit_paste"),
