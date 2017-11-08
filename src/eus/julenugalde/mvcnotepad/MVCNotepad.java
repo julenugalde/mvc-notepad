@@ -8,14 +8,14 @@ import eus.julenugalde.mvcnotepad.controller.*;
 public class MVCNotepad {
 	@SuppressWarnings("unused")
 	private static Controller controller;
-	/** Name of the schema for a database connection; current directory if file is used */
-	private static String dataSource;
 	
 	/** Main function
 	 * 
-	 * @param args args[0] is the kind of data source to be used: "file" for local computer
-	 * file, "db" for database. args[1] specifies the working directory for the files (if empty
-	 * the current directory will be used); for a database connection it indicates the schema
+	 * @param args <code>args[0]</code> is the kind of data source to be used: "file" for local 
+	 * text file, "db" for database, "network" for network connection. 
+	 * <code>args[1]</code> specifies the working directory for the files (if empty
+	 * the current directory will be used); for a database connection it indicates the schema; for
+	 * a network connection indicates the location of the resource.
 	 */
 	public static void main(String[] args) {
 		if ((args.length) < 1)
@@ -23,24 +23,46 @@ public class MVCNotepad {
 		else {
 			//The model will depend on the first parameter
 			if (args[0].equals("file")) {		//Computer file as data source
-				if (args.length == 1)	//No data source specified
-					dataSource = ".";	//Current directory
-				else 
-					dataSource = args[1];
+				if (args.length == 1) {	//No data source specified
+					controller = new MVCNotepadController(MVCNotepadController.MODEL_TEXT_FILE, 
+							MVCNotepadController.SWING_VIEW, ".");
+				}
+				else { 
+					controller = new MVCNotepadController(MVCNotepadController.MODEL_TEXT_FILE, 
+							MVCNotepadController.SWING_VIEW, args[1]);
+				}
 				
-				controller = new MVCNotepadController(MVCNotepadController.MODEL_TEXT_FILE, 
-						MVCNotepadController.SWING_VIEW, dataSource);
-			} else if (args[0].equals("db")) {	//Database as data source
-				if (dataSource.equals("")) {	//Schema not specified
+			} 
+			
+			else if (args[0].equals("db")) {	//Database as data source
+				if (args.length < 2) {
+					showError("The second parameter must specify a database schema name");
+				}				
+				else if (args[1].equals("")) {	//Schema not specified
 					showError("The second parameter must specify a database schema name");
 				}
 				else {	//Load database
 					controller = new MVCNotepadController(MVCNotepadController.MODEL_DATABASE,
 							MVCNotepadController.SWING_VIEW, args[1]);
+				}					
+			} 
+			
+			else if (args[0].equals("network")) {	//Network connection
+				if (args.length < 2) {
+					showError("The second parameter must specify a database schema name");
 				}
-					
-			} else {
-				showError("The value of the first parameter is not valid");
+				else if (args[1].equals("")) {
+					showError("The second parameter must specify a network location");
+				}
+				else {
+					controller = new MVCNotepadController(MVCNotepadController.MODEL_NETWORK,
+							MVCNotepadController.SWING_VIEW, args[1]);
+				}
+			}
+			
+			else {
+				showError("The value of the first parameter is not valid.\n" + 
+						"Available values are 'file', 'db', 'network'");
 			}
 		}			
 	}

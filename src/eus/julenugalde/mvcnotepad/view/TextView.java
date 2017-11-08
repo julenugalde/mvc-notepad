@@ -9,16 +9,31 @@ public interface TextView {
 	public static final int READ = 1;
 	public static final int WRITE = 2;
 		
-	/** Shows a choose prompt to select a source to be read or writen 
+	/** Shows a choose prompt to select a source to be read or writen. To be used when the 
+	 * view implementation allows listing the data sources from a location, e.g. list the 
+	 * files in a directory 
 	 * 
-	 * @param default Initial directory of the source for reading operations, full path
+	 * @param defaultDataSource Initial location of the source for reading operations, full path
 	 * for writing 
-	 * @param <code>TextView.READ</code> indicates that the data source will be read; 
+	 * @param modifier <code>TextView.READ</code> indicates that the data source will be read; 
 	 * <code>TextView.WRITE</code> means that the source will be written.
 	 * @return {@link String} with the full path of the chosen source, <code>null</code> 
 	 * if the operation had errors or was cancelled by the user.
 	 */
 	public String chooseDataSource(String defaultDataSource, int modifier);
+
+	/** Shows a choose prompt to select a source to be read or writen. To be used when the 
+	 * view implementation cannot list the data sources from a location, e.g. access a database
+	 * 
+	 * @param availableSources List of sources for reading operations, name of the source to be
+	 * writen for writing operation 
+	 * @param modifier <code>TextView.READ</code> indicates that the data source will be read; 
+	 * <code>TextView.WRITE</code> means that the source will be written.
+	 * @return {@link String} with the name of the chosen source, <code>null</code> 
+	 * if the operation had errors or was cancelled by the user.
+	 */
+	public String chooseDataSource(String[] availableSources, int modifier);
+	
 	
 	/** Shows a prompt to the user. The possible answers are yes, no and cancel.
 	 * 
@@ -41,8 +56,8 @@ public interface TextView {
 	
 	/** Set the font for displaying the text
 	 * 
-	 * @param fontName {@link Font} name
-	 * @param fontSize {@link Font} size in points
+	 * @param fontName {@link String} font name
+	 * @param fontSize font size in points
 	 */
 	public void setTextFont(String fontName, int fontSize); 	
 	
@@ -55,7 +70,10 @@ public interface TextView {
 	 */
 	public String getCurrentText();
 	
-	/** Show some text in the application's notification area */
+	/** Show some text in the application's notification area 
+	 * 
+	 * @param status Text to be displayed
+	 */
 	public void setStatus(String status);
 	
 	/** Append a string to the text currently in the editor
@@ -67,20 +85,18 @@ public interface TextView {
 	/** Show or hide the application's notificaton area */
 	public void toggleStatusBar();
 	
-	/** Displays a prompt to find the text passed as parameter, allowing the user to
-	 * change it before performing the search
-	 * @param text {@link String} with the default text to search
-	 * @return {@link String} that will be searched
+	/** Displays a prompt to ask the user for a text.
+	 * @param title Title of the prompt to be displayed.
+	 * @param message Message for the prompt.
+	 * @param defaultText {@link String} with the default text.
+	 * @return {@link String} entered by the user. <code>null</code> if the operation is cancelled.
 	 */
-	public String showTextSearchDialog(String text);
+	public String showTextInputDialog(String title, String message, String defaultText);
 	
 	/** Show a custom message to the user
 	 * 
 	 * @param title {@link String} with the message title
 	 * @param message {@link String} with the message to be displayed
-	 * @return An int array with the locations of the text within the text area. Otherwise, 
-	 * <code>null</code> if the user cancelled the operation or an array with a single -1
-	 * value if the text was not found.
 	 */
 	public void showPopupMessage(String title, String message);
 	

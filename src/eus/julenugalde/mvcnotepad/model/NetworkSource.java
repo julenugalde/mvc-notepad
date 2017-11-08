@@ -1,6 +1,7 @@
 package eus.julenugalde.mvcnotepad.model;
 
 public class NetworkSource implements TextSourceModel {
+	@SuppressWarnings("unused")
 	private String sourceLocation;
 	
 	public NetworkSource (String sourceLocation) {
@@ -29,6 +30,24 @@ public class NetworkSource implements TextSourceModel {
 	public boolean createSource(String sourceLocation, String sourceName) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public void closeSource() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean openSource(String sourceLocation) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public String[] listSources(String sourceLocation) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

@@ -28,11 +28,13 @@ public class MVCNotepadController
 implements Controller, ActionListener, KeyListener, WindowListener {
 	private TextSourceModel model;
 	private TextView view;
+
+	private int modelType;
+	private String sourceLocation;
 	
 	private boolean textChanged;
 	private Clipboard clipboard;
 	private String sourceName;
-	private String sourceLocation;
 	private boolean previouslySaved;
 	
 	/** Controller constructor
@@ -44,14 +46,18 @@ implements Controller, ActionListener, KeyListener, WindowListener {
 	 * MODEL_TEXT_FILE, the database schema for MODEL_DATABASE or (NOT IMPLEMENTED FOR NETWORK).
 	 */
 	public MVCNotepadController(int modelType, int viewType, String sourceLocation) {
-		loadModel(modelType, sourceLocation);
-		initializeView(viewType);
-		
+		//Initialize attributes
 		this.sourceLocation = sourceLocation;
+		this.modelType = modelType;
 		textChanged = false;
 		clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 		sourceName = null;
 		previouslySaved = false;
+		
+		// Create the view and the model. The view is used for the model initialization in some
+		// cases, so the order here is important.
+		initializeView(viewType);
+		loadModel(modelType, sourceLocation);		
 	}
 
 	@Override
@@ -59,14 +65,29 @@ implements Controller, ActionListener, KeyListener, WindowListener {
 		switch (modelType) {
 		case MODEL_TEXT_FILE:
 			model = new TextFileSource();
+			if ((model == null) | (!model.openSource(sourceLocation))) {
+				view.showError("Source location error", 
+						"The initial source location is not correct. The home directory " + 
+						"will be used instead.");
+				sourceLocation = System.getProperty("user.home");
+				view.setStatus("Working directory changed to " + sourceLocation);
+			}
 			break;
+			
 		case MODEL_DATABASE:
-			model = new DataBaseSource(sourceLocation);
+			String[] credentials = requestCredentials();
+			model = new DataBaseSource(credentials[0], credentials[1], sourceLocation);
+			if ((model == null) | (!model.openSource(sourceLocation))) {
+				view.showError("Database error", "Error in the database connection");	
+				view.closeView();
+			}
 			break;
+			
 		case MODEL_NETWORK:
 			model = new NetworkSource(sourceLocation);
 			view.showError("Implementation error",
 					"The network source option has not been implemented yet");
+			view.closeView();
 			break;
 		}
 	}
@@ -103,9 +124,11 @@ implements Controller, ActionListener, KeyListener, WindowListener {
 					saveData(Controller.NEW_DATA_SOURCE);
 				}
 				view.closeView();
+				model.closeSource();
 				break;
 			case TextView.NO_OPTION:
 				view.closeView();
+				model.closeSource();
 				break;
 			case TextView.CANCEL_OPTION:	//User cancelled. Do nothing
 				break;
@@ -113,6 +136,7 @@ implements Controller, ActionListener, KeyListener, WindowListener {
 		}
 		else {	//No unsaved data. Exit without warning
 			view.closeView();
+			model.closeSource();
 		}
 	}
 
@@ -247,7 +271,8 @@ implements Controller, ActionListener, KeyListener, WindowListener {
 			}
 			
 			//A prompt is opened to search for a String
-			String searchString = view.showTextSearchDialog(text);
+			String searchString = view.showTextInputDialog(
+					"Find", "Text to find: ", text);
 			if (searchString == null) {
 				view.showPopupMessage("Cancelled", "Search operation cancelled");
 			}
@@ -411,15 +436,27 @@ implements Controller, ActionListener, KeyListener, WindowListener {
 	 * @return {@link String} with the source name, <code>null</code> if no source was selected
 	 */
 	private String loadData() {
-		//First the user is asked to choose a file
-		String fullPath = view.chooseDataSource(sourceLocation, TextView.READ);
-		String[] separatedPath = separatePath(fullPath);
-		if (separatedPath == null) {
+		switch (modelType) {
+		case MODEL_DATABASE:
+			String[] elementos = model.listSources(sourceLocation);
+			sourceName =  view.chooseDataSource(elementos, TextView.READ);
+			return model.readSource(sourceLocation, sourceName);
+		case MODEL_NETWORK:
+			//TODO Implementation pending
+			return null;
+		case MODEL_TEXT_FILE:
+			//First the user is asked to choose a file
+			String fullPath = view.chooseDataSource(sourceLocation, TextView.READ);
+			String[] separatedPath = separatePath(fullPath);
+			if (separatedPath == null) {
+				return null;
+			}
+			sourceLocation = separatedPath[0];
+			sourceName = separatedPath[1];
+			return model.readSource(sourceLocation, sourceName);
+		default:
 			return null;
 		}
-		sourceLocation = separatedPath[0];
-		sourceName = separatedPath[1];
-		return model.readSource(sourceLocation, sourceName);
 	}
 	
 	/** Separates a full path into the location and the resource name
@@ -441,4 +478,22 @@ implements Controller, ActionListener, KeyListener, WindowListener {
 		result[1] = fullPath.substring(separator+1, fullPath.length());
 		return result;
 	}
+	
+	/** Returns the credentials for the data base connection.
+	 * The user will be prompted for the username and password.
+	 * 
+	 * @return {@link String} array with the user name (index 0) and the password (index 1)
+	 */
+	private String[] requestCredentials() {
+		String user = new String();
+		user = view.showTextInputDialog(
+				"Database credentials - User", "Please enter the user name: ", "");
+		if (user == null) return null;
+		String password = view.showTextInputDialog(
+				"Database credentials - Password", "Please enter the password:", "");
+		if (password == null) return null;		
+		return new String [] {user, password};
+	}
+
+
 }

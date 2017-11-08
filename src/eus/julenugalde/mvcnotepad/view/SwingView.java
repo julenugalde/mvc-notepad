@@ -601,9 +601,9 @@ public class SwingView extends JFrame implements TextView {
 	
 
 	@Override
-	public String showTextSearchDialog(String defaultText) {
+	public String showTextInputDialog(String title, String message, String defaultText) {
 		Object obj = JOptionPane.showInputDialog(
-				this, "Find:", "Find", JOptionPane.QUESTION_MESSAGE, null, null, defaultText);
+				this, message, title, JOptionPane.QUESTION_MESSAGE, null, null, defaultText);
 		if (obj == null) {
 			return null;
 		}
@@ -692,5 +692,15 @@ public class SwingView extends JFrame implements TextView {
 		else {
 			return selectedFile.getAbsolutePath();
 		}
+	}
+	
+	@Override
+	public String chooseDataSource(String[] availableSources, int modifier) {
+		//TODO IMPLEMENTAR LA OPERACION DE ESCRITURA
+		Object objRespuesta = JOptionPane.showInputDialog(this, 
+				"Please select a source to be read", "Open location", JOptionPane.QUESTION_MESSAGE,
+				null, availableSources, 0);
+		if (objRespuesta == null) return null;
+		return (objRespuesta.toString());
 	}
 }

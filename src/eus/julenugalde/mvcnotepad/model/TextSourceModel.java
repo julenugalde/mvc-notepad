@@ -52,4 +52,25 @@ public interface TextSourceModel {
 	 * there were errors or the source already existed.
 	 */
 	public boolean createSource(String sourceLocation, String sourceName);
+	
+	/** Opens the source location
+	 * 
+	 * @param sourceLocation {@link String} with the location to be opened. For database connections, 
+	 * attempts to open the connection and checks if the schema is correct
+	 * @return <code>true</code> if successful, <code>false</code> if there are any errors.
+	 */
+	public boolean openSource(String sourceLocation);
+	
+	/** Closes the data source
+	 */
+	public void closeSource();
+	
+	/** Returns a list of all the available data sources in a given location
+	 * 
+	 * @param sourceLocation Location to be searched. It will be directory for text files, the schema
+	 * for database connections or a network location for network connections.
+	 * @return {@link String} array with the list of sources. <code>null</code> if the sourceLocation
+	 * parameter is not correct or does not correspond to a directory.
+	 */
+	public String[] listSources(String sourceLocation);
 }

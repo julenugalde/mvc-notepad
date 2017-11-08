@@ -8,15 +8,17 @@ The following diagram shows the packet structure and dependencies. It has been m
 
 ![UML class diagram](https://github.com/julenugalde/mvcnotepad/blob/master/src/eus/julenugalde/mvcnotepad/UML_class_diagram.png)
 
+## Prerequisites
+
+The model implementation for database requires a MySQL server running in the local machine. Additionally, the MySQL connector must be included in the the project (mysql-connector-java-x.x.xx-bin.jar)
+
 ## Known issues
 
 The network data model is still unimplemented.
 
-There are issues with the line separators in Windows, which are not correctly read from text files. 
+There are problems with the line separator characters in Windows, which are not correctly read from text files. 
 
-## Prerequisites
-
-The model implementation for database requires a MySQL server running in the local machine.
+The password prompt for the  database connection should hide the characters.
 
 ## Icons
 
@@ -26,5 +28,5 @@ All icons are released under an [Attribution-ShareAlike 4.0 International](http:
 
 ## License
 
-GNU General Public License v3.0 [ GNU GPLv3 ](https://www.gnu.org/licenses/gpl-3.0.txt)
+GNU General Public License v3.0. See [GNU GPLv3](https://www.gnu.org/licenses/gpl-3.0.txt).
  

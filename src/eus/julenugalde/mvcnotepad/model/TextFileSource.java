@@ -68,4 +68,30 @@ public class TextFileSource implements TextSourceModel {
 		File file = new File (sourceLocation, sourceName);
 		return (file.exists());
 	}
+
+	@Override
+	public void closeSource() {
+		// Nothing needs to be done
+	}
+
+	@Override
+	public boolean openSource(String sourceLocation) {
+		File dir = new File(sourceLocation);
+		return (dir.exists() & dir.isDirectory());
+	}
+
+	@Override
+	public String[] listSources(String sourceLocation) {
+		File directory = new File(sourceLocation);
+		if (!directory.exists() | !directory.isDirectory()) return null;
+		
+		File[] files = directory.listFiles();
+		if (files == null) return null;
+		
+		String[] sources = new String[files.length];
+		for (int i=0; i<files.length; i++) {
+			sources[i] = new String(files[i].getName());
+		}		
+		return sources;
+	}
 }
