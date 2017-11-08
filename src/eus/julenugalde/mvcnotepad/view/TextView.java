@@ -1,19 +1,24 @@
 package eus.julenugalde.mvcnotepad.view;
 
-import java.awt.Font;
-
 /** Interface that specifies the methods to be implemented for the MVC Notepad view */
 public interface TextView {
 	public static final int YES_OPTION = 1;
 	public static final int NO_OPTION = 2;
 	public static final int CANCEL_OPTION = 0;
 	
-	/** Shows a file choose prompt to select a file to be read 
+	public static final int READ = 1;
+	public static final int WRITE = 2;
+		
+	/** Shows a choose prompt to select a source to be read or writen 
 	 * 
-	 * @param source Initial directory
-	 * @return {@link String} with the file name
+	 * @param default Initial directory of the source for reading operations, full path
+	 * for writing 
+	 * @param <code>TextView.READ</code> indicates that the data source will be read; 
+	 * <code>TextView.WRITE</code> means that the source will be written.
+	 * @return {@link String} with the full path of the chosen source, <code>null</code> 
+	 * if the operation had errors or was cancelled by the user.
 	 */
-	public String chooseFile(String source);
+	public String chooseDataSource(String defaultDataSource, int modifier);
 	
 	/** Shows a prompt to the user. The possible answers are yes, no and cancel.
 	 * 

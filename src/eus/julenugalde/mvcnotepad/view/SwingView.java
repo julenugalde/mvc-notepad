@@ -667,11 +667,23 @@ public class SwingView extends JFrame implements TextView {
 	}
 
 	@Override
-	public String chooseFile(String source) {
-		JFileChooser jfc = new JFileChooser(source);
+	public String chooseDataSource(String defaultDataSource, int modifiers) {
+		JFileChooser jfc = new JFileChooser(defaultDataSource);
 		jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		jfc.setDialogTitle("Choose a file to read");
-		jfc.setDialogType(JFileChooser.OPEN_DIALOG);
+		
+		switch (modifiers) {
+		case TextView.READ:
+			jfc.setDialogTitle("Choose a file to read");
+			jfc.setDialogType(JFileChooser.OPEN_DIALOG);
+			break;
+		case TextView.WRITE:
+			jfc.setDialogTitle("Choose a file to save the data");
+			jfc.setDialogType(JFileChooser.SAVE_DIALOG);
+			break;
+		default:
+			return null;	
+		}
+		
 		jfc.showOpenDialog(this);
 		File selectedFile = jfc.getSelectedFile();
 		if (selectedFile == null) {

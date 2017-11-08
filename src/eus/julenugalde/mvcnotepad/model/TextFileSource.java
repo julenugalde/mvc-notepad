@@ -3,39 +3,57 @@ package eus.julenugalde.mvcnotepad.model;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.StringTokenizer;
+
+//import eus.julenugalde.mvcnotepad.controller.Controller;
 
 public class TextFileSource implements TextSourceModel {
-	public TextFileSource(String directory) {
+	//private Controller controller;
+	
+	public TextFileSource(/*Controller controller*/) {
+		//this.controller = controller;
 		//No need to be done anything in this case. If the directory does not exist or
 		//is not valid, it will be addressed during file read/write operations
 	}
-	
-	@Override
-	public String listSources() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	@Override
-	public boolean writeSource(String sourceName, String elementName) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean createSource(String sourceName, String elementName) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public String readSource(String sourceName, String elementName) {
+	public boolean writeSource(String sourceLocation, String sourceName, String content) {
+		File file = new File (sourceLocation, sourceName);
 		try {
-			File file = new File(sourceName + java.io.File.separator + elementName);
+			FileWriter fw = new FileWriter(file);
+			StringTokenizer st = new StringTokenizer(content, "\n", true);
+			while (st.hasMoreTokens()) {
+				fw.write(st.nextToken());
+				fw.write(System.getProperty("line.separator"));
+			}
+			//fw.write(content);
+			fw.close();
+			return true;
+		} catch (IOException e) {
+			return false;
+		}
+	}
+
+	@Override
+	public boolean createSource(String sourceLocation, String sourceName) {
+		File file = new File(sourceLocation, sourceName);
+		try {
+			return file.createNewFile();
+		} catch (IOException ioex) {
+			return false;
+		}
+	}
+
+	@Override
+	public String readSource(String sourceLocation, String sourceName) {
+		try {
+			File file = new File(sourceLocation + java.io.File.separator + sourceName);
 			BufferedReader br = new BufferedReader(new FileReader(file));
 			StringBuilder sb = new StringBuilder();
 			String line = null;
-            while((line = br.readLine()) != null) {			
+            while((line = br.readLine()) != null) {
             	sb.append(line);
             }
             br.close();
@@ -45,4 +63,9 @@ public class TextFileSource implements TextSourceModel {
 		}
 	}
 
+	@Override
+	public boolean existsSource(String sourceLocation, String sourceName) {
+		File file = new File (sourceLocation, sourceName);
+		return (file.exists());
+	}
 }

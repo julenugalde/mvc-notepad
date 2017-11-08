@@ -17,6 +17,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import eus.julenugalde.mvcnotepad.model.DataBaseSource;
+import eus.julenugalde.mvcnotepad.model.NetworkSource;
 import eus.julenugalde.mvcnotepad.model.TextFileSource;
 import eus.julenugalde.mvcnotepad.model.TextSourceModel;
 import eus.julenugalde.mvcnotepad.view.SwingView;
@@ -29,8 +31,8 @@ implements Controller, ActionListener, KeyListener, WindowListener {
 	
 	private boolean textChanged;
 	private Clipboard clipboard;
-	private String fileName;
-	private String source;
+	private String sourceName;
+	private String sourceLocation;
 	private boolean previouslySaved;
 	
 	/** Controller constructor
@@ -38,33 +40,33 @@ implements Controller, ActionListener, KeyListener, WindowListener {
 	 * @param modelType The type of model to be used. 
 	 * Options: MODEL_TEXT_FILE, MODEL_DATABASE, MODEL_NETWORK
 	 * @param viewType The type of view to be displayed. Options: SWING_VIEW
-	 * @param source Source for the model. It can be the working directory path for 
+	 * @param sourceLocation Source for the model. It can be the working directory path for 
 	 * MODEL_TEXT_FILE, the database schema for MODEL_DATABASE or (NOT IMPLEMENTED FOR NETWORK).
 	 */
-	public MVCNotepadController(int modelType, int viewType, String source) {
-		loadModel(modelType, source);
+	public MVCNotepadController(int modelType, int viewType, String sourceLocation) {
+		loadModel(modelType, sourceLocation);
 		initializeView(viewType);
 		
-		this.source = source;
+		this.sourceLocation = sourceLocation;
 		textChanged = false;
 		clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-		fileName = null;
+		sourceName = null;
 		previouslySaved = false;
 	}
 
 	@Override
-	public void loadModel(int modelType, String source) {
+	public void loadModel(int modelType, String sourceLocation) {
 		switch (modelType) {
 		case MODEL_TEXT_FILE:
-			model = new TextFileSource(source);
+			model = new TextFileSource();
 			break;
 		case MODEL_DATABASE:
-			//TODO Pendiente implementar
-			System.err.println("Error: aún no implementado");
+			model = new DataBaseSource(sourceLocation);
 			break;
 		case MODEL_NETWORK:
-			//TODO Pendiente implementar
-			System.err.println("Error: aún no implementado");
+			model = new NetworkSource(sourceLocation);
+			view.showError("Implementation error",
+					"The network source option has not been implemented yet");
 			break;
 		}
 	}
@@ -100,6 +102,7 @@ implements Controller, ActionListener, KeyListener, WindowListener {
 				else {
 					saveData(Controller.NEW_DATA_SOURCE);
 				}
+				view.closeView();
 				break;
 			case TextView.NO_OPTION:
 				view.closeView();
@@ -151,7 +154,13 @@ implements Controller, ActionListener, KeyListener, WindowListener {
 				switch(view.showPrompt("Unsaved data", 
 						"The current text will be lost. Would you like to save it?")) {
 				case TextView.YES_OPTION:	//Data must be saved
-					//TODO save data
+					if (previouslySaved) {	//File defined		
+						textChanged = !(saveData(Controller.EXISTING_DATA_SOURCE));
+					}
+					else {	//The file was not defined, create a new on
+						textChanged = !(saveData(Controller.NEW_DATA_SOURCE));					
+					}
+					view.deleteText();
 					break;
 				case TextView.NO_OPTION:
 					view.deleteText();
@@ -167,8 +176,12 @@ implements Controller, ActionListener, KeyListener, WindowListener {
 		else if (e.getActionCommand().equals(Action.FILE_SAVE.getCommand())) {
 			view.setStatus("file save");
 			if (textChanged) {	//there are changes to save
-				if (saveData(Controller.EXISTING_DATA_SOURCE)) {
-					textChanged = false;
+				//First we check if there's already a file defined to save the data
+				if (previouslySaved) {	//File defined		
+					textChanged = !(saveData(Controller.EXISTING_DATA_SOURCE));
+				}
+				else {	//The file was not defined, create a new on
+					textChanged = !(saveData(Controller.NEW_DATA_SOURCE));					
 				}
 			}
 		}
@@ -309,16 +322,40 @@ implements Controller, ActionListener, KeyListener, WindowListener {
 
 	/** Saves the text in a data source
 	 * 
-	 * @param existingDataSource <code>Controller.EXISTING_DATA_SOURCE</code> indicates that  
-	 * THE source to be used has already been accessed and the same will be used. 
+	 * @param existing <code>Controller.EXISTING_DATA_SOURCE</code> indicates that  
+	 * the source to be used has already been accessed and the same will be used. 
 	 * <code>Controller.NEW_DATA_SOURCE</code> indicates that a new data source will be used and
 	 * the user will be prompted
 	 * @return <code>true</code> if the save operation is successful, <code>false</code> if 
 	 * somethings goes wrong.
 	 */
-	private boolean saveData(int existingDataSource) {
-		// TODO Auto-generated method stub
-		return false;
+	private boolean saveData(int existing) {
+		if (existing == Controller.NEW_DATA_SOURCE) { //First we need to select a source
+			String fullPath = view.chooseDataSource(sourceLocation, TextView.WRITE);
+			String[] separatedPath = separatePath(fullPath);
+			if (separatedPath == null) {
+				view.showError("Save error", "The data source name is not valid");
+				return false;
+			}
+			sourceLocation = separatedPath[0];
+			sourceName = separatedPath[1];
+		}
+		//Strings sourceLocation and sourceName already contain the source info
+		assert sourceLocation != null;
+		assert sourceName != null;
+		if (!model.existsSource(sourceLocation, sourceName)) {	//New source will be created
+			if (!model.createSource(sourceLocation, sourceName)) {
+				view.showError("Save error", "Error creating the data source");
+				return false;	
+			}			
+		}		
+		if (model.writeSource(sourceLocation, sourceName, view.getCurrentText())) {
+			previouslySaved = true;	//Next save operation will not ask for the location
+			return true;
+		}
+		else {
+			return false;
+		}		
 	}
 
 	private String createAboutText() {
@@ -375,15 +412,33 @@ implements Controller, ActionListener, KeyListener, WindowListener {
 	 */
 	private String loadData() {
 		//First the user is asked to choose a file
-		String fullPath = view.chooseFile(source);
-		if (fullPath != null) {
-			int separator = fullPath.lastIndexOf(java.io.File.separator);
-			source = fullPath.substring(0, separator);
-			fileName = fullPath.substring(separator+1, fullPath.length());
-			return model.readSource(source, fileName);
-		}
-		else {
+		String fullPath = view.chooseDataSource(sourceLocation, TextView.READ);
+		String[] separatedPath = separatePath(fullPath);
+		if (separatedPath == null) {
 			return null;
-		}		
+		}
+		sourceLocation = separatedPath[0];
+		sourceName = separatedPath[1];
+		return model.readSource(sourceLocation, sourceName);
+	}
+	
+	/** Separates a full path into the location and the resource name
+	 * 
+	 * @param fullPath Full path
+	 * @return String[2], with the first element containing the source location and the second
+	 * element the source name
+	 */
+	private static String[] separatePath(String fullPath) {
+		if (fullPath == null) {
+			return null;
+		}
+		if (!fullPath.contains(java.io.File.separator)) {
+			return null;
+		}
+		String[] result = new String[2];
+		int separator = fullPath.lastIndexOf(java.io.File.separator);
+		result[0] = fullPath.substring(0, separator);
+		result[1] = fullPath.substring(separator+1, fullPath.length());
+		return result;
 	}
 }
