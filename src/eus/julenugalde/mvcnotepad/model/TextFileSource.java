@@ -19,8 +19,8 @@ public class TextFileSource implements TextSourceModel {
 	}
 
 	@Override
-	public boolean writeSource(String sourceLocation, String sourceName, String content) {
-		File file = new File (sourceLocation, sourceName);
+	public boolean writeSource(Source source, String content) {
+		File file = new File (source.getLocation(), source.getName());
 		try {
 			FileWriter fw = new FileWriter(file);
 			StringTokenizer st = new StringTokenizer(content, "\n", true);
@@ -37,8 +37,8 @@ public class TextFileSource implements TextSourceModel {
 	}
 
 	@Override
-	public boolean createSource(String sourceLocation, String sourceName) {
-		File file = new File(sourceLocation, sourceName);
+	public boolean createSource(Source source) {
+		File file = new File(source.getLocation(), source.getName());
 		try {
 			return file.createNewFile();
 		} catch (IOException ioex) {
@@ -47,9 +47,10 @@ public class TextFileSource implements TextSourceModel {
 	}
 
 	@Override
-	public String readSource(String sourceLocation, String sourceName) {
+	public String readSource(Source source) {
 		try {
-			File file = new File(sourceLocation + java.io.File.separator + sourceName);
+			File file = new File(
+					source.getLocation() + java.io.File.separator + source.getName());
 			BufferedReader br = new BufferedReader(new FileReader(file));
 			StringBuilder sb = new StringBuilder();
 			String line = null;
@@ -64,8 +65,8 @@ public class TextFileSource implements TextSourceModel {
 	}
 
 	@Override
-	public boolean existsSource(String sourceLocation, String sourceName) {
-		File file = new File (sourceLocation, sourceName);
+	public boolean existsSource(Source source) {
+		File file = new File (source.getLocation(), source.getName());
 		return (file.exists());
 	}
 

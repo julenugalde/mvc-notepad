@@ -17,8 +17,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import eus.julenugalde.mvcnotepad.model.Credentials;
 import eus.julenugalde.mvcnotepad.model.DataBaseSource;
 import eus.julenugalde.mvcnotepad.model.NetworkSource;
+import eus.julenugalde.mvcnotepad.model.Source;
 import eus.julenugalde.mvcnotepad.model.TextFileSource;
 import eus.julenugalde.mvcnotepad.model.TextSourceModel;
 import eus.julenugalde.mvcnotepad.view.SwingView;
@@ -30,11 +32,9 @@ implements Controller, ActionListener, KeyListener, WindowListener {
 	private TextView view;
 
 	private int modelType;
-	private String sourceLocation;
-	
+	private Source source;	
 	private boolean textChanged;
 	private Clipboard clipboard;
-	private String sourceName;
 	private boolean previouslySaved;
 	
 	/** Controller constructor
@@ -47,11 +47,10 @@ implements Controller, ActionListener, KeyListener, WindowListener {
 	 */
 	public MVCNotepadController(int modelType, int viewType, String sourceLocation) {
 		//Initialize attributes
-		this.sourceLocation = sourceLocation;
+		source = new Source(sourceLocation, null);
 		this.modelType = modelType;
 		textChanged = false;
 		clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-		sourceName = null;
 		previouslySaved = false;
 		
 		// Create the view and the model. The view is used for the model initialization in some
@@ -75,11 +74,16 @@ implements Controller, ActionListener, KeyListener, WindowListener {
 			break;
 			
 		case MODEL_DATABASE:
-			String[] credentials = requestCredentials();
-			model = new DataBaseSource(credentials[0], credentials[1], sourceLocation);
-			if ((model == null) | (!model.openSource(sourceLocation))) {
-				view.showError("Database error", "Error in the database connection");	
+			Credentials credentials = requestCredentials();
+			if (credentials == null) {
 				view.closeView();
+			}
+			else {
+				model = new DataBaseSource(credentials, sourceLocation);
+				if ((model == null) | (!model.openSource(sourceLocation))) {
+					view.showError("Database error", "Error in the database connection");	
+					view.closeView();
+				}
 			}
 			break;
 			
@@ -356,31 +360,45 @@ implements Controller, ActionListener, KeyListener, WindowListener {
 	 */
 	private boolean saveData(int existing) {
 		if (existing == Controller.NEW_DATA_SOURCE) { //First we need to select a source
-			String fullPath = view.chooseDataSource(sourceLocation, TextView.WRITE);
-			String[] separatedPath = separatePath(fullPath);
-			if (separatedPath == null) {
-				view.showError("Save error", "The data source name is not valid");
+			//The way to select the data source will depend on the model type
+			switch (modelType) {
+			case MODEL_TEXT_FILE:	//The view displays a file choose dialog
+				String fullPath = view.chooseDataSource(source.getLocation(), TextView.WRITE);
+				Source separatedPath = Source.separatePath(fullPath);
+				if (separatedPath == null) {
+					view.showError("Save error", "The data source name is not valid");
+					return false;
+				}
+				source = separatedPath;
+				break;
+			
+			case MODEL_DATABASE:
+				String chosenFile = view.chooseDataSource((String[])null, TextView.WRITE);
+				if ((chosenFile == null) | (chosenFile.isEmpty())) return false;
+				source.setName(chosenFile);
+				break;
+				
+			case MODEL_NETWORK:
+				//TODO Network model implementation
+				break;
+			default:
 				return false;
 			}
-			sourceLocation = separatedPath[0];
-			sourceName = separatedPath[1];
 		}
-		//Strings sourceLocation and sourceName already contain the source info
-		assert sourceLocation != null;
-		assert sourceName != null;
-		if (!model.existsSource(sourceLocation, sourceName)) {	//New source will be created
-			if (!model.createSource(sourceLocation, sourceName)) {
+		//The source object already contains the source info
+		assert source.getLocation() != null;
+		assert source.getName() != null;
+		if (!model.existsSource(source)) {	//New source will be created
+			if (!model.createSource(source)) {
 				view.showError("Save error", "Error creating the data source");
 				return false;	
 			}			
 		}		
-		if (model.writeSource(sourceLocation, sourceName, view.getCurrentText())) {
+		if (model.writeSource(source, view.getCurrentText())) {
 			previouslySaved = true;	//Next save operation will not ask for the location
 			return true;
 		}
-		else {
-			return false;
-		}		
+		else return false;	
 	}
 
 	private String createAboutText() {
@@ -438,53 +456,30 @@ implements Controller, ActionListener, KeyListener, WindowListener {
 	private String loadData() {
 		switch (modelType) {
 		case MODEL_DATABASE:
-			String[] elementos = model.listSources(sourceLocation);
-			sourceName =  view.chooseDataSource(elementos, TextView.READ);
-			return model.readSource(sourceLocation, sourceName);
+			String[] elementos = model.listSources(source.getLocation());
+			source.setName(view.chooseDataSource(elementos, TextView.READ));
+			return model.readSource(source);
 		case MODEL_NETWORK:
-			//TODO Implementation pending
+			//TODO Network model implementation
 			return null;
 		case MODEL_TEXT_FILE:
 			//First the user is asked to choose a file
-			String fullPath = view.chooseDataSource(sourceLocation, TextView.READ);
-			String[] separatedPath = separatePath(fullPath);
-			if (separatedPath == null) {
-				return null;
-			}
-			sourceLocation = separatedPath[0];
-			sourceName = separatedPath[1];
-			return model.readSource(sourceLocation, sourceName);
+			String fullPath = view.chooseDataSource(source.getLocation(), TextView.READ);
+			Source result = Source.separatePath(fullPath);
+			if (result == null) return null;
+			source = result;
+			return model.readSource(source);
 		default:
 			return null;
 		}
 	}
 	
-	/** Separates a full path into the location and the resource name
-	 * 
-	 * @param fullPath Full path
-	 * @return String[2], with the first element containing the source location and the second
-	 * element the source name
-	 */
-	private static String[] separatePath(String fullPath) {
-		if (fullPath == null) {
-			return null;
-		}
-		if (!fullPath.contains(java.io.File.separator)) {
-			return null;
-		}
-		String[] result = new String[2];
-		int separator = fullPath.lastIndexOf(java.io.File.separator);
-		result[0] = fullPath.substring(0, separator);
-		result[1] = fullPath.substring(separator+1, fullPath.length());
-		return result;
-	}
-	
 	/** Returns the credentials for the data base connection.
 	 * The user will be prompted for the username and password.
 	 * 
-	 * @return {@link String} array with the user name (index 0) and the password (index 1)
+	 * @return {@link Credentials} instance with the user name and the password
 	 */
-	private String[] requestCredentials() {
+	private Credentials requestCredentials() {
 		String user = new String();
 		user = view.showTextInputDialog(
 				"Database credentials - User", "Please enter the user name: ", "");
@@ -492,8 +487,6 @@ implements Controller, ActionListener, KeyListener, WindowListener {
 		String password = view.showTextInputDialog(
 				"Database credentials - Password", "Please enter the password:", "");
 		if (password == null) return null;		
-		return new String [] {user, password};
+		return new Credentials (user, password);
 	}
-
-
 }

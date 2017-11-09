@@ -3,22 +3,22 @@
   realizations="true" associations="true" dependencies="false" nesting-relationships="true" router="FAN">  
   <package id="1" language="java" name="eus.julenugalde.mvcnotepad.controller" project="MVCNotepad" 
     file="/MVCNotepad/src/eus/julenugalde/mvcnotepad/controller" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="974" width="557" x="1450" y="383"/>    
+    <position height="974" width="437" x="1472" y="397"/>    
     <display autosize="false" stereotype="true" sort-features="false" accessors="true"/>  
   </package>  
   <package id="2" language="java" name="eus.julenugalde.mvcnotepad.model" project="MVCNotepad" 
     file="/MVCNotepad/src/eus/julenugalde/mvcnotepad/model" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="758" width="691" x="704" y="451"/>    
+    <position height="885" width="599" x="826" y="453"/>    
     <display autosize="false" stereotype="true" sort-features="false" accessors="true"/>  
   </package>  
   <package id="3" language="java" name="eus.julenugalde.mvcnotepad.view" project="MVCNotepad" 
     file="/MVCNotepad/src/eus/julenugalde/mvcnotepad/view" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="1116" width="622" x="2209" y="335"/>    
+    <position height="1116" width="603" x="1959" y="333"/>    
     <display autosize="false" stereotype="true" sort-features="false" accessors="true"/>  
   </package>  
   <interface id="4" language="java" name="eus.julenugalde.mvcnotepad.model.TextSourceModel" project="MVCNotepad" 
     file="/MVCNotepad/src/eus/julenugalde/mvcnotepad/model/TextSourceModel.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="1116" y="612"/>    
+    <position height="-1" width="-1" x="1178" y="614"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -27,16 +27,16 @@
   </interface>  
   <class id="5" language="java" name="eus.julenugalde.mvcnotepad.model.DataBaseSource" project="MVCNotepad" 
     file="/MVCNotepad/src/eus/julenugalde/mvcnotepad/model/DataBaseSource.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="876" y="860"/>    
+    <position height="-1" width="-1" x="1279" y="855"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
-      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+      <attributes public="true" package="true" protected="true" private="false" static="true"/>      
+      <operations public="true" package="true" protected="true" private="false" static="true"/>    
     </display>  
   </class>  
   <class id="6" language="java" name="eus.julenugalde.mvcnotepad.model.TextFileSource" project="MVCNotepad" 
     file="/MVCNotepad/src/eus/julenugalde/mvcnotepad/model/TextFileSource.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="1242" y="892"/>    
+    <position height="-1" width="-1" x="937" y="828"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -45,7 +45,7 @@
   </class>  
   <interface id="7" language="java" name="eus.julenugalde.mvcnotepad.controller.Controller" project="MVCNotepad" 
     file="/MVCNotepad/src/eus/julenugalde/mvcnotepad/controller/Controller.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="1856" y="650"/>    
+    <position height="-1" width="-1" x="1790" y="664"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -54,7 +54,7 @@
   </interface>  
   <enumeration id="8" language="java" name="eus.julenugalde.mvcnotepad.controller.Action" project="MVCNotepad" 
     file="/MVCNotepad/src/eus/julenugalde/mvcnotepad/controller/Action.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="1648" y="660"/>    
+    <position height="-1" width="-1" x="1582" y="674"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="false" static="true"/>      
@@ -64,7 +64,7 @@
   <class id="9" language="java" name="eus.julenugalde.mvcnotepad.controller.MVCNotepadController" project="MVCNotepad" 
     file="/MVCNotepad/src/eus/julenugalde/mvcnotepad/controller/MVCNotepadController.java" binary="false" 
     corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="1840" y="1120"/>    
+    <position height="-1" width="-1" x="1742" y="1106"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="false" static="true"/>      
@@ -73,7 +73,7 @@
   </class>  
   <interface id="10" language="java" name="eus.julenugalde.mvcnotepad.view.TextView" project="MVCNotepad" 
     file="/MVCNotepad/src/eus/julenugalde/mvcnotepad/view/TextView.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="2362" y="708"/>    
+    <position height="-1" width="-1" x="2112" y="706"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="false" static="true"/>      
@@ -82,7 +82,7 @@
   </interface>  
   <class id="11" language="java" name="eus.julenugalde.mvcnotepad.view.SwingView" project="MVCNotepad" 
     file="/MVCNotepad/src/eus/julenugalde/mvcnotepad/view/SwingView.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="2652" y="1098"/>    
+    <position height="-1" width="-1" x="2402" y="1096"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="false" static="true"/>      
@@ -91,57 +91,103 @@
   </class>  
   <class id="12" language="java" name="eus.julenugalde.mvcnotepad.model.NetworkSource" project="MVCNotepad" 
     file="/MVCNotepad/src/eus/julenugalde/mvcnotepad/model/NetworkSource.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="1030" y="1090"/>    
+    <position height="-1" width="-1" x="952" y="1159"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="false" static="true"/>      
       <operations public="true" package="true" protected="true" private="false" static="true"/>    
     </display>  
   </class>  
-  <realization id="13">    
-    <end type="SOURCE" refId="6"/>    
-    <end type="TARGET" refId="4"/>  
-  </realization>  
-  <realization id="14">    
+  <class id="13" language="java" name="eus.julenugalde.mvcnotepad.model.Credentials" project="MVCNotepad" 
+    file="/MVCNotepad/src/eus/julenugalde/mvcnotepad/model/Credentials.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="1145" y="1115"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="false" static="true"/>      
+      <operations public="true" package="true" protected="true" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="14" language="java" name="eus.julenugalde.mvcnotepad.model.Source" project="MVCNotepad" 
+    file="/MVCNotepad/src/eus/julenugalde/mvcnotepad/model/Source.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="1326" y="1230"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="false" static="true"/>      
+      <operations public="true" package="true" protected="true" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <realization id="15">    
     <end type="SOURCE" refId="5"/>    
     <end type="TARGET" refId="4"/>  
   </realization>  
-  <association id="15">    
+  <realization id="16">    
+    <end type="SOURCE" refId="12"/>    
+    <end type="TARGET" refId="4"/>  
+  </realization>  
+  <association id="17">    
+    <end type="SOURCE" refId="9" navigable="false">      
+      <attribute id="18" name="view">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="19" minimum="0" maximum="1">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="10" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="20">    
     <end type="SOURCE" refId="11" navigable="false">      
-      <attribute id="16" name="controller"/>      
-      <multiplicity id="17" minimum="0" maximum="1"/>    
+      <attribute id="21" name="controller">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="22" minimum="0" maximum="1">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
     </end>    
     <end type="TARGET" refId="7" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <realization id="18">    
-    <end type="SOURCE" refId="12"/>    
-    <end type="TARGET" refId="4"/>  
-  </realization>  
-  <realization id="19">    
-    <end type="SOURCE" refId="9"/>    
-    <end type="TARGET" refId="7"/>  
-  </realization>  
-  <association id="20">    
-    <end type="SOURCE" refId="9" navigable="false">      
-      <attribute id="21" name="model"/>      
-      <multiplicity id="22" minimum="0" maximum="1"/>    
-    </end>    
-    <end type="TARGET" refId="4" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
   <association id="23">    
     <end type="SOURCE" refId="9" navigable="false">      
-      <attribute id="24" name="view"/>      
-      <multiplicity id="25" minimum="0" maximum="1"/>    
+      <attribute id="24" name="model">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="25" minimum="0" maximum="1">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
     </end>    
-    <end type="TARGET" refId="10" navigable="true"/>    
+    <end type="TARGET" refId="4" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
   <realization id="26">    
     <end type="SOURCE" refId="11"/>    
     <end type="TARGET" refId="10"/>  
   </realization>  
+  <association id="27">    
+    <end type="SOURCE" refId="5" navigable="false">      
+      <attribute id="28" name="credentials"/>      
+      <multiplicity id="29" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="13" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <realization id="30">    
+    <end type="SOURCE" refId="6"/>    
+    <end type="TARGET" refId="4"/>  
+  </realization>  
+  <realization id="31">    
+    <end type="SOURCE" refId="9"/>    
+    <end type="TARGET" refId="7"/>  
+  </realization>  
+  <association id="32">    
+    <end type="SOURCE" refId="9" navigable="false">      
+      <attribute id="33" name="source"/>      
+      <multiplicity id="34" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="14" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
   <classifier-display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
     sort-features="false" accessors="true" visibility="true">    
     <attributes public="true" package="true" protected="true" private="true" static="true"/>    

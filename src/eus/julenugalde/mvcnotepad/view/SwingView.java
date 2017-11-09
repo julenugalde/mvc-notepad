@@ -696,11 +696,25 @@ public class SwingView extends JFrame implements TextView {
 	
 	@Override
 	public String chooseDataSource(String[] availableSources, int modifier) {
-		//TODO IMPLEMENTAR LA OPERACION DE ESCRITURA
-		Object objRespuesta = JOptionPane.showInputDialog(this, 
-				"Please select a source to be read", "Open location", JOptionPane.QUESTION_MESSAGE,
-				null, availableSources, 0);
-		if (objRespuesta == null) return null;
-		return (objRespuesta.toString());
+		switch (modifier) {
+		case TextView.READ:
+			Object objRespuesta = JOptionPane.showInputDialog(this, 
+					"Please select a source to be read", "Open location", 
+					JOptionPane.QUESTION_MESSAGE, null, availableSources, 0);
+			if (objRespuesta == null) return null;
+			return (objRespuesta.toString());	
+			
+		case TextView.WRITE:
+			Object objResult = JOptionPane.showInputDialog(this, 
+					"Please select the name of the data source", "Save data",
+					JOptionPane.QUESTION_MESSAGE);
+			if (objResult == null) return null;
+			else { 
+				return objResult.toString();
+			}           
+
+		default:
+			return null;
+		}
 	}
 }

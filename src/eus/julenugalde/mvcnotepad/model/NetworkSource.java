@@ -9,45 +9,44 @@ public class NetworkSource implements TextSourceModel {
 	}
 	
 	@Override
-	public String readSource(String sourceLocation, String sourceName) {
-		// TODO Auto-generated method stub
+	public String readSource(Source source) {
+		// TODO Network model implementation
 		return null;
 	}
 
 	@Override
-	public boolean writeSource(String sourceLocation, String sourceName, String content) {
-		// TODO Auto-generated method stub
+	public boolean writeSource(Source source, String content) {
+		// TODO Network model implementation
 		return false;
 	}
 
 	@Override
-	public boolean existsSource(String sourceLocation, String sourceName) {
-		// TODO Auto-generated method stub
+	public boolean existsSource(Source source) {
+		// TODO Network model implementation
 		return false;
 	}
 
 	@Override
-	public boolean createSource(String sourceLocation, String sourceName) {
-		// TODO Auto-generated method stub
+	public boolean createSource(Source source) {
+		// TODO Network model implementation
 		return false;
 	}
 
 	@Override
 	public void closeSource() {
-		// TODO Auto-generated method stub
+		// TODO Network model implementation
 		
 	}
 
 	@Override
 	public boolean openSource(String sourceLocation) {
-		// TODO Auto-generated method stub
+		// TODO Network model implementation
 		return false;
 	}
 
 	@Override
 	public String[] listSources(String sourceLocation) {
-		// TODO Auto-generated method stub
+		// TODO Network model implementation
 		return null;
 	}
-
 }
